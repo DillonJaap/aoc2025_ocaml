@@ -70,11 +70,10 @@ module Part2 = struct
   let has_repeated_digits number =
     let number = string_of_int number in
     (* don't use 1 because the string wouldn't repeat *)
-    let multiples =
-      get_multiples (String.length number) |> List.filter ~f:(fun e -> e <> 1)
-    in
-    List.exists multiples ~f:(fun multiple ->
-      let segmented_string = segment number multiple in
+    get_multiples (String.length number)
+    |> List.filter ~f:(fun e -> e <> 1)
+    |> List.map ~f:(fun m -> segment number m)
+    |> List.exists ~f:(fun segmented_string ->
       List.for_all segmented_string ~f:(fun e ->
         String.( = ) e (List.hd_exn segmented_string)))
   ;;
