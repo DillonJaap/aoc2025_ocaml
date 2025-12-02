@@ -1,6 +1,6 @@
 (library
  (name lib)
- (modules day1 util)
+ (modules day1 day2 util)
  (libraries angstrom core)
  (preprocess
   (pps ppx_jane)))

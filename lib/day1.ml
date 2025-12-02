@@ -19,7 +19,7 @@ let is_digit = function
   | _ -> false
 ;;
 
-let get_turns =
+let parse_turns =
   let get_turn =
     let* dir = char 'L' *> return Left <|> char 'R' *> return Right in
     let* num = take_while1 is_digit >>| int_of_string in
@@ -48,11 +48,13 @@ module Part1 = struct
   ;;
 
   (* running *)
-  let run () = Util.parse_file get_turns "day1.txt" |> get_code
+  let run () = Util.parse_file parse_turns "day1.txt" |> get_code
 end
 
 module Part2 = struct
-  let do_turn current_position turn_amount = (current_position + turn_amount) % 100
+  let do_turn current_position turn_amount =
+    (current_position + turn_amount) % 100
+  ;;
 
   let number_of_times_crossed_zero current_position turn_amount =
     let new_position = current_position + turn_amount in
@@ -70,12 +72,14 @@ module Part2 = struct
         let current_position, total = acc in
         let direction, turn_amount = cur in
         let turn_amount = turn_amount * sign_of direction in
-        let total = total + number_of_times_crossed_zero current_position turn_amount in
+        let total =
+          total + number_of_times_crossed_zero current_position turn_amount
+        in
         let new_position = do_turn current_position turn_amount in
         new_position, total)
     in
     total
   ;;
 
-  let run () = Util.parse_file get_turns "day1.txt" |> get_code
+  let run () = Util.parse_file parse_turns "day1.txt" |> get_code
 end
