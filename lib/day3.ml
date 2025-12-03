@@ -64,17 +64,20 @@ module Part2 = struct
     loop battery_bank n []
   ;;
 
+  let calculate_joltatge bank =
+    let res, _ =
+      find_max_n_digits bank 12
+      |> List.fold ~init:(0, 0) ~f:(fun acc cur ->
+        let sum, power = acc in
+        let sum = sum + (cur * Int.pow 10 power) in
+        sum, power + 1)
+    in
+    res
+  ;;
+
   let run () =
     parse_batteries
-    |> List.map ~f:(fun battery_bank ->
-      let res, _ =
-        find_max_n_digits battery_bank 12
-        |> List.fold ~init:(0, 0) ~f:(fun acc cur ->
-          let sum, power = acc in
-          let sum = sum + (cur * Int.pow 10 power) in
-          sum, power + 1)
-      in
-      res)
+    |> List.map ~f:(fun battery_bank -> calculate_joltatge battery_bank)
     |> List.sum (module Int) ~f:(fun a -> a)
   ;;
 end
