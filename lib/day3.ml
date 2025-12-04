@@ -1,18 +1,5 @@
 open Core
 
-(* Parsing  *)
-let is_digit = function
-  | '0' .. '9' -> true
-  | _ -> false
-;;
-
-(* let parse_batteries = *)
-(*   let* res = sep_by (char '\n') (take_while1 is_digit) in *)
-(*   return *)
-(*     (List.map res ~f:(fun s -> *)
-(*        String.to_list s |> List.map ~f:(fun c -> int_of_char c))) *)
-(* ;; *)
-
 let parse_batteries =
   In_channel.read_all "inputs/day3.txt"
   |> String.split ~on:'\n'

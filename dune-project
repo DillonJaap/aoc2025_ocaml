@@ -23,7 +23,8 @@
   ocaml
   core
   angstrom
-  (ocaml-lsp-server :dev)
+  (ocaml-lsp-server
+   (>= 1.24.0 :dev))
   (merlin :dev)
   (ocamlformat :dev)
   (ppx_jane :build))
