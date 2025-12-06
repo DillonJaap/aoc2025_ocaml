@@ -86,8 +86,8 @@ module Part2 = struct
             Char.( = ) grid.(x).(y) '@' && number_of_adjacent_rolls grid x y < 4
           then (
             grid.(x).(y) <- '.';
-            some_left := true;
-            total := !total + 1)
+            total := !total + 1;
+            some_left := true)
           else ()
         done
       done
