@@ -37,57 +37,54 @@ module Part1 = struct
 end
 
 module Part2 = struct
-  (* intervals are inclusive *)
-  module Interval = struct
-    type t = int * int
+  (* return the interval in a that is not in b *)
+  let difference a b =
+    let a_start, a_end = a in
+    let b_start, b_end = b in
+    if a_end < b_start || b_end < a_start
+    then [ a ]
+    else (
+      let beg_range =
+        if a_start < b_start then Some (a_start, b_start - 1) else None
+      in
+      let end_range = if b_end < a_end then Some (b_end + 1, a_end) else None in
+      match beg_range, end_range with
+      | Some b, Some e -> [ b; e ]
+      | Some b, None -> [ b ]
+      | None, Some e -> [ e ]
+      | None, None -> [])
+  ;;
 
-    (* combine two intervals into a single interval if possible *)
-    let combine a b =
-      let a_start, a_end = a in
-      let b_start, b_end = b in
-      if a_end < b_start || b_end < a_start
-      then (
-        print_string "here";
-        None)
-      else Some (Int.min a_start b_start, Int.max a_end b_end)
-    ;;
-
-    let difference a b =
-      let a_start, a_end = a in
-      let b_start, b_end = b in
-      if a_end < b_start || b_start < b_end
-      then 0
-      else (
-        let begin_range = if a_start < b_start then b_start - a_start else 0 in
-        let end_range = if b_end < a_end then a_end - b_end else 0 in
-        begin_range + end_range)
-    ;;
-
-    (* let add interval_list interval = *)
-    (*   let rec loop old_list new_list (interval : t) = *)
-    (*     match List.hd old_list with *)
-    (*     | None -> List.rev (interval :: new_list) *)
-    (*     | Some hd -> *)
-    (*       (match combine interval hd with *)
-    (*        | None -> loop (List.tl_exn old_list) (hd :: new_list) interval *)
-    (*        | Some combined -> loop (List.tl_exn old_list) new_list combined) *)
-    (*   in *)
-    (*   loop interval_list [] interval *)
-  end
+  let remove_overlap list =
+    let rec diff_list list intervals =
+      match list, intervals with
+      (* we either have recursed through the whole list *)
+      (* or the list of intervals has become empty, in which case we can exit early *)
+      | [], _ | _, [] -> intervals
+      | hd :: tl, _ ->
+        let intervals =
+          List.fold intervals ~init:[] ~f:(fun acc cur ->
+            List.concat [ acc; difference cur hd ])
+        in
+        diff_list tl intervals
+    in
+    (* apply the difference to every interval in the list to the rest of the list *)
+    let rec loop list new_list =
+      match list with
+      | hd :: tl ->
+        let diff = diff_list tl [ hd ] in
+        loop tl (List.concat [ new_list; diff ])
+      | _ -> new_list
+    in
+    loop list []
+  ;;
 
   let run () =
-    let ranges, _ = Util.parse_file parse_ingredients "day5.txt" in
-    print_s ([%sexp_of: (int * int) list] ranges);
-    (* let ranges = Interval.add ranges (3, 5) in *)
-    (* print_s ([%sexp_of: (int * int) list] ranges); *)
-    (* let new_range = Interval.combine (3, 3) (4, 11) in *)
-    (* print_s ([%sexp_of: (int * int) option] new_range); *)
-    0
+    let intervals, _ = Util.parse_file parse_ingredients "day5.txt" in
+    intervals
+    |> remove_overlap
+    |> List.fold ~init:0 ~f:(fun acc cur ->
+      let start, end_ = cur in
+      acc + (end_ - start) + 1)
   ;;
-  (* List.sum *)
-  (*   (module Int) *)
-  (*   ranges *)
-  (*   ~f:(fun range -> *)
-  (*     let s, e = range in *)
-  (*     e - s + 1) *)
 end
