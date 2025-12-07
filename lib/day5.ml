@@ -38,53 +38,52 @@ end
 
 module Part2 = struct
   (* return the interval in a that is not in b *)
-  let difference a b =
-    let a_start, a_end = a in
-    let b_start, b_end = b in
+  let difference (a_start, a_end) (b_start, b_end) =
     if a_end < b_start || b_end < a_start
-    then [ a ]
-    else (
-      let beg_range =
-        if a_start < b_start then Some (a_start, b_start - 1) else None
-      in
-      let end_range = if b_end < a_end then Some (b_end + 1, a_end) else None in
-      match beg_range, end_range with
-      | Some b, Some e -> [ b; e ]
-      | Some b, None -> [ b ]
-      | None, Some e -> [ e ]
-      | None, None -> [])
+    then [ a_start, a_end ]
+    else
+      List.filter_opt
+        [ (if a_start < b_start then Some (a_start, b_start - 1) else None)
+        ; (if b_end < a_end then Some (b_end + 1, a_end) else None)
+        ]
   ;;
 
   let remove_overlap list =
-    let rec diff_list list intervals =
-      match list, intervals with
+    let rec diff_list remaining intervals =
+      match remaining, intervals with
       (* we either have recursed through the whole list *)
       (* or the list of intervals has become empty, in which case we can exit early *)
       | [], _ | _, [] -> intervals
       | hd :: tl, _ ->
         let intervals =
           List.fold intervals ~init:[] ~f:(fun acc cur ->
-            List.concat [ acc; difference cur hd ])
+            acc @ difference cur hd)
         in
         diff_list tl intervals
     in
     (* apply the difference to every interval in the list to the rest of the list *)
-    let rec loop list new_list =
+    let rec loop list acc =
       match list with
+      | [] -> acc
       | hd :: tl ->
         let diff = diff_list tl [ hd ] in
-        loop tl (List.concat [ new_list; diff ])
-      | _ -> new_list
+        loop tl (acc @ diff)
     in
     loop list []
   ;;
 
   let run () =
     let intervals, _ = Util.parse_file parse_ingredients "day5.txt" in
-    intervals
-    |> remove_overlap
-    |> List.fold ~init:0 ~f:(fun acc cur ->
-      let start, end_ = cur in
-      acc + (end_ - start) + 1)
+    let start_time = Time_ns.now () in
+    let count =
+      intervals
+      |> remove_overlap
+      |> List.fold ~init:0 ~f:(fun acc cur ->
+        let start, end_ = cur in
+        acc + (end_ - start) + 1)
+    in
+    let elapsed = Time_ns.diff (Time_ns.now ()) start_time in
+    printf "Execution time: %s\n" (Time_ns.Span.to_string_hum elapsed);
+    count
   ;;
 end
