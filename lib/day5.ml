@@ -74,16 +74,10 @@ module Part2 = struct
 
   let run () =
     let intervals, _ = Util.parse_file parse_ingredients "day5.txt" in
-    let start_time = Time_ns.now () in
-    let count =
-      intervals
-      |> remove_overlap
-      |> List.fold ~init:0 ~f:(fun acc cur ->
-        let start, end_ = cur in
-        acc + (end_ - start) + 1)
-    in
-    let elapsed = Time_ns.diff (Time_ns.now ()) start_time in
-    printf "Execution time: %s\n" (Time_ns.Span.to_string_hum elapsed);
-    count
+    intervals
+    |> remove_overlap
+    |> List.fold ~init:0 ~f:(fun acc cur ->
+      let start, end_ = cur in
+      acc + (end_ - start) + 1)
   ;;
 end
