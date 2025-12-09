@@ -44,7 +44,6 @@ module Part2 = struct
       |> String.to_list
       |> List.filter ~f:(fun ch -> not @@ Char.( = ) ch ' ')
     in
-    print_s ([%sexp_of: char list] operators);
     let operands =
       input
       |> String.split_lines
@@ -55,25 +54,29 @@ module Part2 = struct
       |> List.map ~f:(fun cur ->
         if String.for_all cur ~f:(fun ch -> Char.( = ) ch ' ')
         then "\n"
-        else cur)
+        else String.filter cur ~f:(fun ch -> not (Char.( = ) ch ' ')) ^ " ")
+      |> String.concat
+      |> String.split_lines
+      |> List.map ~f:(fun cur -> String.split cur ~on:' ')
+      |> List.drop_last_exn
     in
-    List.iter operands ~f:(fun cur -> print_string cur)
+    (* print_s ([%sexp_of: string list list] operands); *)
+    List.map2_exn operands operators ~f:(fun operands operator ->
+      operator, operands)
   ;;
 
-  (* List.map2_exn operands operators ~f:(fun operands operator -> *)
-  (*   operands, operator) *)
+  (* List.iteri operands ~f:(fun i cur -> *)
+  (*   print_endline @@ cur ^ " : " ^ string_of_int i) *)
 
   let run () =
-    let _math = In_channel.read_all "inputs/day6.txt" |> parse in
-    (* print_s ([%sexp_of: (string list * char) list] math); *)
-    0
+    let math = In_channel.read_all "inputs/day6.txt" |> parse in
+    List.fold math ~init:0 ~f:(fun acc cur ->
+      let sum =
+        match cur with
+        | '*', n -> List.fold n ~init:1 ~f:(fun acc cur -> acc * cur)
+        | '+', n -> List.fold n ~init:0 ~f:(fun acc cur -> acc + cur)
+        | _, _ -> failwith "not a valid operator"
+      in
+      sum + acc)
   ;;
-  (* List.fold math ~init:0 ~f:(fun acc cur -> *)
-  (*   let sum = *)
-  (*     match cur with *)
-  (*     | '*', n -> List.fold n ~init:1 ~f:(fun acc cur -> acc * cur) *)
-  (*     | '+', n -> List.fold n ~init:0 ~f:(fun acc cur -> acc + cur) *)
-  (*     | _, _ -> failwith "not a valid operator" *)
-  (*   in *)
-  (*   sum + acc) *)
 end
