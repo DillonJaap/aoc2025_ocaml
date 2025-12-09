@@ -49,20 +49,19 @@ module Part2 = struct
       input
       |> String.split_lines
       |> List.drop_last_exn
-      |> List.map ~f:(fun cur ->
-        let cur =
-          match String.filter cur ~f:(fun ch -> not @@ Char.( = ) ch ' ') with
-          | "" -> "\n"
-          | cur -> cur
-        in
-        cur |> String.rev |> String.to_list)
+      |> List.map ~f:(fun cur -> cur |> String.rev |> String.to_list)
       |> List.transpose_exn
       |> List.map ~f:(fun cur -> cur |> String.of_char_list)
+      |> List.map ~f:(fun cur ->
+        if String.for_all cur ~f:(fun ch -> Char.( = ) ch ' ')
+        then "\n"
+        else cur)
     in
-    List.iter operands ~f:(fun cur -> print_endline cur);
-    List.map2_exn operands operators ~f:(fun operands operator ->
-      operands, operator)
+    List.iter operands ~f:(fun cur -> print_string cur)
   ;;
+
+  (* List.map2_exn operands operators ~f:(fun operands operator -> *)
+  (*   operands, operator) *)
 
   let run () =
     let _math = In_channel.read_all "inputs/day6.txt" |> parse in
