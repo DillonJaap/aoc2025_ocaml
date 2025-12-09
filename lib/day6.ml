@@ -35,38 +35,40 @@ module Part1 = struct
 end
 
 module Part2 = struct
+  let string_is_spaces = String.for_all ~f:(fun cur -> Char.equal cur ' ')
+  let char_is_not_space ch = not @@ Char.equal ch ' '
+
   let parse input =
+    (* operators *)
     let operators =
       input
       |> String.split_lines
       |> List.last_exn
       |> String.rev
       |> String.to_list
-      |> List.filter ~f:(fun ch -> not @@ Char.( = ) ch ' ')
+      |> List.filter ~f:char_is_not_space
     in
-    let operands =
+    let operand_lines =
       input
       |> String.split_lines
       |> List.drop_last_exn
       |> List.map ~f:(fun cur -> cur |> String.rev |> String.to_list)
       |> List.transpose_exn
       |> List.map ~f:(fun cur -> cur |> String.of_char_list)
-      |> List.map ~f:(fun cur ->
-        if String.for_all cur ~f:(fun ch -> Char.( = ) ch ' ')
-        then "\n"
-        else String.filter cur ~f:(fun ch -> not (Char.( = ) ch ' ')) ^ " ")
-      |> String.concat
-      |> String.split_lines
-      |> List.map ~f:(fun cur -> String.split cur ~on:' ')
-      |> List.drop_last_exn
     in
-    (* print_s ([%sexp_of: string list list] operands); *)
-    List.map2_exn operands operators ~f:(fun operands operator ->
-      operator, operands)
+    let rec loop current_group groupings lines =
+      match lines with
+      | hd :: tl when string_is_spaces hd ->
+        loop [] (current_group :: groupings) tl
+      | hd :: tl ->
+        let num = int_of_string @@ String.filter hd ~f:char_is_not_space in
+        loop (num :: current_group) groupings tl
+      | [] -> List.rev (current_group :: groupings)
+    in
+    let operands = loop [] [] operand_lines in
+    List.map2_exn operators operands ~f:(fun operands operator ->
+      operands, operator)
   ;;
-
-  (* List.iteri operands ~f:(fun i cur -> *)
-  (*   print_endline @@ cur ^ " : " ^ string_of_int i) *)
 
   let run () =
     let math = In_channel.read_all "inputs/day6.txt" |> parse in
