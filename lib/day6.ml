@@ -44,28 +44,35 @@ module Part2 = struct
       input
       |> String.split_lines
       |> List.last_exn
-      |> String.rev
+      |> String.rev (* reverse so we can read left-to-right *)
       |> String.to_list
       |> List.filter ~f:char_is_not_space
     in
     let operand_lines =
       input
       |> String.split_lines
+      (* remove operator line *)
       |> List.drop_last_exn
+      (* reverse the list and transpose it so we can parse it normaly *)
+      (* left-to-right top-to-bottom *)
       |> List.map ~f:(fun cur -> cur |> String.rev |> String.to_list)
       |> List.transpose_exn
+      (* covert back to a string list *)
       |> List.map ~f:(fun cur -> cur |> String.of_char_list)
     in
+    (* parse the lines - put the operands into (int list list) groupings *)
     let rec loop current_group groupings lines =
       match lines with
+      (*  a line of all spaces is our "delimiter" operand groups *)
       | hd :: tl when string_is_spaces hd ->
         loop [] (current_group :: groupings) tl
       | hd :: tl ->
-        let num = int_of_string @@ String.filter hd ~f:char_is_not_space in
+        let num = String.filter hd ~f:char_is_not_space |> int_of_string in
         loop (num :: current_group) groupings tl
       | [] -> List.rev (current_group :: groupings)
     in
     let operands = loop [] [] operand_lines in
+    (* group the operands with their corresponding operators *)
     List.map2_exn operators operands ~f:(fun operands operator ->
       operands, operator)
   ;;
