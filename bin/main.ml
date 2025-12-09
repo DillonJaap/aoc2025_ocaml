@@ -18,5 +18,6 @@ let () =
   printf "\tPart 1: %d\n" (Day5.Part1.run ());
   printf "\tPart 2: %d\n" (Day5.Part2.run ());
   print_endline "Day 6:";
-  printf "\tPart 1: %d\n" (Day6.Part1.run ())
+  printf "\tPart 1: %d\n" (Day6.Part1.run ());
+  printf "\tPart 2: %d\n" (Day6.Part2.run ())
 ;;

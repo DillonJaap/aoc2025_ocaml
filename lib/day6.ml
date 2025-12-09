@@ -23,7 +23,6 @@ let parse_cephalopod_math =
 module Part1 = struct
   let run () =
     let math = Util.parse_file parse_cephalopod_math "day6.txt" in
-    print_s ([%sexp_of: (char * int list) list] math);
     List.fold math ~init:0 ~f:(fun acc cur ->
       let sum =
         match cur with
@@ -36,38 +35,46 @@ module Part1 = struct
 end
 
 module Part2 = struct
-  let parse_right_to_left input =
-    let list = input |> String.split_lines |> List.drop_last_exn in
-    let operator_line = List.last_exn list in
-    let operand_lines = List.drop_last_exn list in
-    let rec loop i list =
-      if i < (List.hd_exn operand_lines |> String.length)
-      then (
-        let str =
-          List.fold operand_lines ~init:"" ~f:(fun acc cur ->
-            (Char.to_string @@ String.get cur i) ^ acc)
-        in
-        loop (i + 1) (str :: list))
-      else list
-    in
-    let operands = loop 0 [] |> List.map ~f:(fun a -> int_of_string a) in
+  let parse input =
     let operators =
-      String.split operator_line ~on:' '
-      |> List.filter ~f:(fun a -> String.( = ) a "")
+      input
+      |> String.split_lines
+      |> List.last_exn
+      |> String.rev
+      |> String.to_list
+      |> List.filter ~f:(fun ch -> not @@ Char.( = ) ch ' ')
     in
-    |> List.map2_exn operands operators ~f:(fun operands operator -> operands, operator)
+    print_s ([%sexp_of: char list] operators);
+    let operands =
+      input
+      |> String.split_lines
+      |> List.drop_last_exn
+      |> List.map ~f:(fun cur ->
+        let cur =
+          match String.filter cur ~f:(fun ch -> not @@ Char.( = ) ch ' ') with
+          | "" -> "\n"
+          | cur -> cur
+        in
+        cur |> String.rev |> String.to_list)
+      |> List.transpose_exn
+      |> List.map ~f:(fun cur -> cur |> String.of_char_list)
+    in
+    List.iter operands ~f:(fun cur -> print_endline cur);
+    List.map2_exn operands operators ~f:(fun operands operator ->
+      operands, operator)
   ;;
 
   let run () =
-    let math = Util.parse_file parse_cephalopod_math "day6.txt" in
-    print_s ([%sexp_of: (char * int list) list] math);
-    List.fold math ~init:0 ~f:(fun acc cur ->
-      let sum =
-        match cur with
-        | '*', n -> List.fold n ~init:1 ~f:(fun acc cur -> acc * cur)
-        | '+', n -> List.fold n ~init:0 ~f:(fun acc cur -> acc + cur)
-        | _, _ -> failwith "not a valid operator"
-      in
-      sum + acc)
+    let _math = In_channel.read_all "inputs/day6.txt" |> parse in
+    (* print_s ([%sexp_of: (string list * char) list] math); *)
+    0
   ;;
+  (* List.fold math ~init:0 ~f:(fun acc cur -> *)
+  (*   let sum = *)
+  (*     match cur with *)
+  (*     | '*', n -> List.fold n ~init:1 ~f:(fun acc cur -> acc * cur) *)
+  (*     | '+', n -> List.fold n ~init:0 ~f:(fun acc cur -> acc + cur) *)
+  (*     | _, _ -> failwith "not a valid operator" *)
+  (*   in *)
+  (*   sum + acc) *)
 end
